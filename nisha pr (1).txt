@@ -1,0 +1,70 @@
+#include<LiquidCrystal.h>
+LiquidCrystal lcd(2,3,4,5,6,7);
+#include<SoftwareSerial.h>
+
+SoftwareSerial mySerial(9,10);
+int gasValue=A0;//smoke /gas sensor connected with analog pin A1 of the arduino/mega.
+int data=0;
+const int buz=A5;
+void setup()
+{
+  mySerial.begin(9600);//setting the baud rate of gsm module
+  Serial.begin(9600);//setting the baud rate of serial monitor (Arduino)
+  lcd.begin(16,2);
+  lcd.print("Gas Leakage");
+  lcd.setCursor(0,1);//first is column & second is row
+  lcd.print("Detector Alarm");
+  delay(3000);
+  pinMode(buz,OUTPUT);
+  lcd.clear(); // put your setup code here, to run once:
+lcd.print("Gas Leakage");
+  lcd.setCursor(0,1);
+  lcd.print("Detector Alarm");
+  delay(3000);
+}
+
+void loop() {
+  data=analogRead(gasValue);
+  Serial.print("Gas Level: ");
+  Serial.println(data);
+  lcd.print("Gas Scan is ON");
+  lcd.setCursor(0,1);
+  
+  if(data<500)//
+  {
+    digitalWrite(buz,HIGH);
+    SendMessage();
+    Serial.println("Gas Detect Alarm");
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Gas level Exceeds");
+    lcd.setCursor(0,1);
+    lcd.print("SMS Send");
+    delay(1000);
+  }
+  else
+  {
+    
+    digitalWrite(buz,LOW);
+    Serial.println("Gas Level Low");
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Gas Level Normal");
+    delay(1000);
+  }
+  delay(1000);
+
+  lcd.clear();
+}
+ void SendMessage()
+{
+  Serial.println("I am in send");
+  mySerial.println("AT+CMGF=1");//set the gsm module in text mode
+  delay(1000);//delay 1000 milli seconds or 1 second
+  mySerial.println("AT+CMGS=\"+917062268805\"\r");
+  delay(1000);
+  mySerial.println("excess gas detected.open windows");//the sms text you want to send 
+  delay(100);
+  mySerial.println((char)26);//ASCII code of CTRL+Z
+  delay(1000);
+}
